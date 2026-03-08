@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>AI Chatbot</title>
+
+<style>
+
+body{
+font-family: Arial;
+background:#f2f2f2;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+#container{
+width:500px;
+background:white;
+border-radius:10px;
+box-shadow:0px 0px 10px rgba(0,0,0,0.2);
+padding:20px;
+}
+
+#chatbox{
+height:350px;
+overflow-y:auto;
+border:1px solid #ddd;
+padding:10px;
+border-radius:5px;
+margin-bottom:10px;
+}
+
+.user{
+text-align:right;
+color:blue;
+margin:8px 0;
+}
+
+.bot{
+text-align:left;
+color:green;
+margin:8px 0;
+}
+
+#inputArea{
+display:flex;
+gap:10px;
+}
+
+input{
+flex:1;
+padding:10px;
+}
+
+button{
+padding:10px 15px;
+cursor:pointer;
+}
+
+.loading{
+color:gray;
+font-style:italic;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="container">
+
+<h2>AI Chatbot</h2>
+
+<div id="chatbox"></div>
+
+<div id="inputArea">
+<input type="text" id="message" placeholder="Ask something..." />
+<button onclick="sendMessage()">Send</button>
+</div>
+
+</div>
+
+<script>
+
+const chatbox = document.getElementById("chatbox");
+const input = document.getElementById("message");
+
+input.addEventListener("keypress",function(e){
+if(e.key==="Enter"){
+sendMessage();
+}
+});
+
+async function sendMessage(){
+
+let userMessage = input.value.trim();
+
+if(userMessage==="") return;
+
+chatbox.innerHTML += `<div class="user"><b>You:</b> ${userMessage}</div>`;
+
+input.value="";
+
+let loadingMsg = document.createElement("div");
+loadingMsg.className="loading";
+loadingMsg.innerText="AI is typing...";
+chatbox.appendChild(loadingMsg);
+
+chatbox.scrollTop = chatbox.scrollHeight;
+
+try{
+
+let response = await fetch(
+"https://router.huggingface.co/fal-ai/fal-ai/chatterbox/text-to-speech",
+{
+method:"POST",
+headers:{
+"Authorization":"Bearer YOUR_API_KEY",
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+inputs:userMessage
+})
+}
+);
+
+let data = await response.json();
+
+loadingMsg.remove();
+
+if(data.error){
+chatbox.innerHTML += `<div class="bot">Model loading... try again.</div>`;
+return;
+}
+
+let botReply = data[0].generated_text;
+
+chatbox.innerHTML += `<div class="bot"><b>AI:</b> ${botReply}</div>`;
+
+chatbox.scrollTop = chatbox.scrollHeight;
+
+}catch(error){
+
+loadingMsg.remove();
+
+chatbox.innerHTML += `<div class="bot">Connection error.</div>`;
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
