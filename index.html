@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>My Diary</title>
+<link href="https://fonts.googleapis.com/css2?family=Reenie+Beanie&family=Lora:ital,wght@0,400;1,400&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#1c1a18;--surf:#252320;--card:#2e2b27;--bdr:#3d3830;--gold:#d4a84b;--gold2:#e8c97a;--txt:#f0ead8;--mut:#8a8070;--red:#c0543a;--grn:#5a8c5a;--paper:#faf6ee;--pline:#e8dfc8;--ink:#1a1510}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);overflow:hidden}
+
+/* PIN */
+#PIN{position:fixed;inset:0;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:800;gap:1.2rem}
+.plogo{font-family:'Reenie Beanie',cursive;font-size:3.2rem;color:var(--gold)}
+.psub{font-size:.76rem;color:var(--mut);letter-spacing:.15em;text-transform:uppercase}
+.pdots{display:flex;gap:.65rem}
+.pdot{width:13px;height:13px;border-radius:50%;border:2px solid var(--bdr);transition:all .2s}
+.pdot.on{background:var(--gold);border-color:var(--gold)}
+.ppad{display:grid;grid-template-columns:repeat(3,66px);gap:.5rem}
+.pk{height:52px;background:var(--card);border:1px solid var(--bdr);border-radius:9px;color:var(--txt);font-size:1.15rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s,transform .1s}
+.pk:hover{background:var(--bdr)}.pk:active{transform:scale(.92)}
+.perr{color:var(--red);font-size:.73rem;height:15px;text-align:center}
+.pacts{display:flex;gap:.9rem;align-items:center}
+.plink{background:none;border:1px solid var(--bdr);color:var(--mut);padding:.32rem .9rem;border-radius:5px;cursor:pointer;font-size:.68rem;font-family:'DM Sans',sans-serif;transition:all .15s}
+.plink:hover{border-color:var(--gold);color:var(--gold)}
+.pout{font-size:.66rem;color:var(--mut);cursor:pointer;text-decoration:underline}
+.pout:hover{color:var(--red)}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+
+/* App */
+.app{display:flex;height:100vh;overflow:hidden}
+
+/* Sidebar */
+.sb{width:255px;min-width:255px;background:var(--surf);border-right:1px solid var(--bdr);display:flex;flex-direction:column}
+.sbh{padding:1.1rem 1rem .85rem;border-bottom:1px solid var(--bdr)}
+.sbh-top{display:flex;align-items:center;gap:.6rem;margin-bottom:.18rem}
+.prof-btn{width:32px;height:32px;border-radius:50%;background:var(--card);border:1px solid var(--bdr);cursor:pointer;font-size:.88rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:border-color .15s,background .15s;padding:0;overflow:hidden}
+.prof-btn:hover{border-color:var(--gold);background:var(--bdr)}
+.prof-btn img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.logo{font-family:'Reenie Beanie',cursive;font-size:1.9rem;color:var(--gold);line-height:1}
+.uname{font-size:.62rem;color:var(--mut);margin-top:.1rem}
+.udate{font-size:.6rem;color:var(--mut);margin-top:1px}
+.sba{display:flex;gap:.38rem;padding:.62rem .62rem 0}
+.newbk{flex:1;padding:.48rem;background:var(--gold);color:var(--bg);border:none;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:500;cursor:pointer;transition:background .2s}
+.newbk:hover{background:var(--gold2)}
+.ib{background:var(--card);border:1px solid var(--bdr);color:var(--mut);padding:.48rem .58rem;border-radius:6px;cursor:pointer;font-size:.78rem;transition:all .15s}
+.ib:hover{color:var(--gold);border-color:var(--gold)}
+.blbl{padding:.82rem 1rem .26rem;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--mut)}
+.blist{flex:1;overflow-y:auto;padding:0 .42rem .85rem}
+.blist::-webkit-scrollbar{width:3px}.blist::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:2px}
+.bi{display:flex;align-items:center;gap:.48rem;padding:.56rem .62rem;border-radius:7px;margin-bottom:2px;cursor:pointer;transition:background .15s}
+.bi:hover{background:var(--card)}.bi.on{background:var(--card);outline:1px solid var(--bdr)}
+.bsp{width:8px;min-width:8px;height:32px;border-radius:3px}
+.bn{flex:1;min-width:0}
+.bt{font-size:.76rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--txt)}
+.bm{font-size:.58rem;color:var(--mut);margin-top:1px}
+.bdel{opacity:0;background:none;border:none;cursor:pointer;color:var(--mut);font-size:.78rem;padding:2px 4px;border-radius:3px;transition:opacity .15s,color .15s}
+.bi:hover .bdel{opacity:1}.bdel:hover{color:var(--red)}
+
+/* Main */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.9rem;text-align:center;padding:2rem}
+.eico{font-size:3.2rem;opacity:.22}
+.ettl{font-family:'Lora',serif;font-size:1.35rem;font-style:italic;color:var(--mut)}
+.esub{font-size:.74rem;color:var(--mut);max-width:230px;line-height:1.6}
+.ew{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* Book header */
+.bh{display:flex;align-items:center;gap:.62rem;padding:.62rem 1.05rem;border-bottom:1px solid var(--bdr);background:var(--surf);flex-shrink:0}
+.bdot{width:11px;height:11px;border-radius:50%}
+.bname{font-family:'Lora',serif;font-size:1rem;font-style:italic;background:none;border:none;outline:none;color:var(--txt);flex:1;min-width:0}
+.bname::placeholder{color:var(--mut)}
+.acts{display:flex;gap:.28rem}
+.act{background:none;border:1px solid var(--bdr);color:var(--mut);padding:.24rem .5rem;border-radius:4px;cursor:pointer;font-size:.66rem;font-family:'DM Sans',sans-serif;transition:all .15s;white-space:nowrap}
+.act:hover{color:var(--gold);border-color:var(--gold)}
+.sv{font-size:.58rem;color:var(--mut);white-space:nowrap}
+.sv.saving{color:var(--gold)}.sv.saved{color:var(--grn)}
+
+/* Tabs */
+.tabs{display:flex;padding:0 1.05rem;border-bottom:1px solid var(--bdr);background:var(--surf);flex-shrink:0;gap:.15rem}
+.tab{padding:.48rem .78rem;font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s,border-color .15s}
+.tab.on{color:var(--gold);border-color:var(--gold)}.tab:hover:not(.on){color:var(--txt)}
+
+/* Pages panel */
+.pp{display:flex;overflow:hidden;flex:1}
+.psb{width:150px;min-width:150px;border-right:1px solid var(--bdr);display:flex;flex-direction:column;background:var(--surf)}
+.psbh{padding:.5rem .62rem;border-bottom:1px solid var(--bdr);display:flex;justify-content:space-between;align-items:center}
+.plbl{font-size:.56rem;letter-spacing:.15em;text-transform:uppercase;color:var(--mut)}
+.npb{background:none;border:1px solid var(--bdr);color:var(--gold);font-size:.66rem;padding:2px 6px;border-radius:4px;cursor:pointer;font-family:'DM Sans',sans-serif}
+.npb:hover{background:var(--card)}
+.plist{flex:1;overflow-y:auto;padding:.28rem}
+.plist::-webkit-scrollbar{width:3px}.plist::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:2px}
+.pi{padding:.4rem .48rem;border-radius:4px;cursor:pointer;margin-bottom:2px;transition:background .15s;display:flex;justify-content:space-between;align-items:flex-start}
+.pi:hover{background:var(--card)}.pi.on{background:var(--card);outline:1px solid var(--bdr)}
+.pii{overflow:hidden;flex:1}
+.pid{font-size:.56rem;color:var(--gold)}
+.ppv{font-size:.62rem;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:85px;margin-top:1px}
+.pdl{opacity:0;background:none;border:none;cursor:pointer;color:var(--mut);font-size:.64rem;padding:1px 2px;transition:opacity .15s,color .15s;flex-shrink:0}
+.pi:hover .pdl{opacity:1}.pdl:hover{color:var(--red)}
+
+/* Content */
+.ca{flex:1;overflow:hidden;display:flex;flex-direction:column}
+
+/* Write */
+.wp{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.wtb{display:flex;gap:.16rem;padding:.4rem .82rem;border-bottom:1px solid var(--bdr);flex-wrap:wrap;align-items:center;background:var(--surf)}
+.wb{background:none;border:1px solid transparent;color:var(--mut);padding:.22rem .38rem;border-radius:3px;cursor:pointer;font-size:.7rem;font-family:'DM Sans',sans-serif;transition:all .15s;min-width:22px;text-align:center}
+.wb:hover{background:var(--card);color:var(--txt);border-color:var(--bdr)}
+.ws{width:1px;height:14px;background:var(--bdr);margin:0 2px}
+.paper{flex:1;overflow-y:auto;background:var(--paper);padding:1.9rem 2.5rem;position:relative}
+.paper::-webkit-scrollbar{width:5px}.paper::-webkit-scrollbar-thumb{background:#d4c9b0;border-radius:3px}
+.paper::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(to bottom,transparent,transparent 31px,var(--pline) 31px,var(--pline) 32px);background-position:0 44px;pointer-events:none;opacity:.55}
+.paper::after{content:'';position:absolute;top:0;bottom:0;left:2.9rem;width:1px;background:#e8b0a0;opacity:.45;pointer-events:none}
+.ed{width:100%;min-height:100%;background:transparent;border:none;outline:none;font-family:'Lora',serif;font-size:1rem;color:var(--ink);line-height:2rem;resize:none;padding-left:.75rem;position:relative;z-index:1}
+.ed[contenteditable]:empty::before{content:attr(data-ph);color:#b0a898;font-style:italic}
+
+/* Draw */
+.dp{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.dtb{display:flex;align-items:center;gap:.38rem;padding:.4rem .82rem;border-bottom:1px solid var(--bdr);background:var(--surf);flex-wrap:wrap}
+.dc{width:16px;height:16px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .15s,border-color .15s}
+.dc:hover,.dc.on{transform:scale(1.22);border-color:#fff}
+.dsz{-webkit-appearance:none;width:68px;height:3px;background:var(--bdr);border-radius:2px;cursor:pointer;accent-color:var(--gold)}
+.dcw{flex:1;overflow:hidden;background:var(--paper)}
+#CV{display:block;cursor:crosshair;touch-action:none}
+
+/* Photos */
+.ph{flex:1;overflow-y:auto;padding:.9rem;background:var(--bg);display:flex;flex-wrap:wrap;gap:.6rem;align-content:flex-start}
+.pc{position:relative;width:128px;height:128px;background:var(--card);border-radius:6px;overflow:hidden;border:1px solid var(--bdr)}
+.pc img{width:100%;height:100%;object-fit:cover}
+.pcd{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.65);border:none;color:#fff;border-radius:50%;width:19px;height:19px;font-size:.6rem;cursor:pointer;opacity:0;transition:opacity .15s;display:flex;align-items:center;justify-content:center}
+.pc:hover .pcd{opacity:1}
+.pa{width:128px;height:128px;background:var(--card);border:2px dashed var(--bdr);border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.28rem;cursor:pointer;color:var(--mut);transition:border-color .15s,color .15s}
+.pa:hover{border-color:var(--gold);color:var(--gold)}.pa span{font-size:1.25rem}.pa p{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase}
+
+/* Calendar */
+.cov{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:150;opacity:0;pointer-events:none;transition:opacity .2s}
+.cov.on{opacity:1;pointer-events:all}
+.cm{background:var(--card);border:1px solid var(--bdr);border-radius:13px;padding:1.4rem;width:330px;max-width:95vw}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.cttl{font-family:'Lora',serif;font-size:.98rem;font-style:italic;color:var(--gold)}
+.cn{background:none;border:1px solid var(--bdr);color:var(--mut);width:25px;height:25px;border-radius:4px;cursor:pointer;font-size:.85rem;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.cn:hover{color:var(--gold);border-color:var(--gold)}
+.cg{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cdh{font-size:.55rem;color:var(--mut);text-align:center;padding:2px 0;text-transform:uppercase}
+.cd{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:4px;font-size:.7rem;cursor:pointer;transition:background .15s;position:relative;color:var(--txt);border:1px solid transparent}
+.cd:hover{background:var(--surf)}.cd.hase{color:var(--gold);font-weight:500}
+.cd.hase::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:3px;height:3px;border-radius:50%;background:var(--gold)}
+.cd.tod{border-color:var(--bdr)}.cd.om{color:var(--bdr);cursor:default}
+.ccls{margin-top:1rem;width:100%;padding:.48rem;background:var(--surf);border:1px solid var(--bdr);color:var(--mut);border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.72rem;transition:all .15s}
+.ccls:hover{color:var(--txt);border-color:var(--txt)}
+
+/* Modals */
+.mov{position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:opacity .2s}
+.mov.on{opacity:1;pointer-events:all}
+.mod{background:var(--card);border:1px solid var(--bdr);border-radius:11px;padding:1.6rem;width:305px;max-width:94vw;transform:translateY(14px);transition:transform .2s}
+.mov.on .mod{transform:translateY(0)}
+.mod h3{font-family:'Lora',serif;font-size:1.05rem;font-style:italic;margin-bottom:1.05rem;color:var(--gold)}
+.mod label{font-size:.64rem;color:var(--mut);letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:.28rem}
+.mi{width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--txt);padding:.48rem .68rem;border-radius:5px;font-family:'DM Sans',sans-serif;font-size:.84rem;outline:none;margin-bottom:.78rem}
+.mi:focus{border-color:var(--gold)}
+.cpr{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:1.1rem}
+.cs{width:22px;height:22px;border-radius:5px;cursor:pointer;border:2px solid transparent;transition:transform .15s,border-color .15s}
+.cs:hover,.cs.on{transform:scale(1.15);border-color:#fff}
+.mbs{display:flex;gap:.5rem;justify-content:flex-end}
+.bc{background:none;border:1px solid var(--bdr);color:var(--mut);padding:.44rem .9rem;border-radius:5px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.72rem;transition:all .15s}
+.bc:hover{border-color:var(--txt);color:var(--txt)}
+.bcr{background:var(--gold);border:none;color:var(--bg);padding:.44rem 1.05rem;border-radius:5px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:500;transition:background .15s}
+.bcr:hover{background:var(--gold2)}
+.pds{display:flex;gap:.48rem;justify-content:center;margin:.38rem 0 .78rem}
+.pdi{width:10px;height:10px;border-radius:50%;border:2px solid var(--bdr);transition:all .2s}
+.pdi.on{background:var(--gold);border-color:var(--gold)}
+.pp2{display:grid;grid-template-columns:repeat(3,1fr);gap:.38rem;margin-bottom:.78rem}
+.p2{height:39px;background:var(--surf);border:1px solid var(--bdr);border-radius:6px;color:var(--txt);font-size:.95rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s}
+.p2:hover{background:var(--bdr)}
+.mer{color:var(--red);font-size:.64rem;text-align:center;height:13px;margin-bottom:.38rem}
+.exw{background:var(--surf);border-radius:6px;padding:.78rem;font-size:.74rem;color:var(--mut);text-align:center;margin-bottom:.78rem;line-height:1.65}
+.pbw{background:var(--bdr);border-radius:4px;height:4px;overflow:hidden;margin-top:.5rem}
+.pb{height:100%;background:var(--gold);border-radius:4px;transition:width .3s;width:0}
+</style>
+</head>
+<body>
+
+<!-- PIN Screen -->
+<div id="PIN">
+  <div class="plogo">My Diary</div>
+  <div class="psub" id="psub">Enter PIN to unlock</div>
+  <div class="pdots">
+    <div class="pdot" id="pd0"></div><div class="pdot" id="pd1"></div>
+    <div class="pdot" id="pd2"></div><div class="pdot" id="pd3"></div>
+  </div>
+  <div class="ppad">
+    <button class="pk" onclick="kp('1')">1</button><button class="pk" onclick="kp('2')">2</button><button class="pk" onclick="kp('3')">3</button>
+    <button class="pk" onclick="kp('4')">4</button><button class="pk" onclick="kp('5')">5</button><button class="pk" onclick="kp('6')">6</button>
+    <button class="pk" onclick="kp('7')">7</button><button class="pk" onclick="kp('8')">8</button><button class="pk" onclick="kp('9')">9</button>
+    <button class="pk" onclick="kp('c')" style="font-size:.76rem;color:var(--mut)">CLR</button>
+    <button class="pk" onclick="kp('0')">0</button>
+    <button class="pk" onclick="kp('b')" style="font-size:.76rem">⌫</button>
+  </div>
+  <div class="perr" id="perr"></div>
+  <div class="pacts">
+    <button class="plink" id="spb" onclick="setSP()">Set / Change PIN</button>
+  </div>
+</div>
+
+<!-- App -->
+<div class="app" id="APP" style="display:none">
+  <aside class="sb">
+    <div class="sbh">
+      <div class="sbh-top">
+        <button class="prof-btn" id="PROF-BTN" onclick="window.location.href='profile.html'" title="View Profile">👤</button>
+        <div class="logo">My Diary</div>
+      </div>
+      <div class="uname" id="UN"></div>
+      <div class="udate" id="UD"></div>
+    </div>
+    <div class="sba">
+      <button class="newbk" onclick="openNBM()">+ New Book</button>
+      <button class="ib" onclick="openCal()" title="Calendar">📅</button>
+      <button class="ib" onclick="lockApp()" title="Lock">🔒</button>
+    </div>
+    <div class="blbl">Your Books</div>
+    <div class="blist" id="BL"></div>
+  </aside>
+
+  <main class="main">
+    <div class="empty" id="EMP">
+      <div class="eico">📓</div>
+      <div class="ettl">No book open</div>
+      <div class="esub">Create a new book or select one to begin writing.</div>
+    </div>
+    <div class="ew" id="EW" style="display:none">
+      <div class="bh">
+        <div class="bdot" id="BDT"></div>
+        <input class="bname" id="BNM" placeholder="Book title...">
+        <div class="acts">
+          <button class="act" onclick="exportPDF()">📄 PDF</button>
+          <button class="act" onclick="openBLM()">🔒 Lock</button>
+        </div>
+        <span class="sv" id="SV">Saved</span>
+      </div>
+      <div class="tabs">
+        <div class="tab on" data-t="w" onclick="swTab('w')">✏ Write</div>
+        <div class="tab" data-t="d" onclick="swTab('d')">🎨 Draw</div>
+        <div class="tab" data-t="p" onclick="swTab('p')">📷 Photos</div>
+      </div>
+      <div class="pp">
+        <div class="psb">
+          <div class="psbh"><span class="plbl">Pages</span><button class="npb" onclick="newPage()">+</button></div>
+          <div class="plist" id="PL"></div>
+        </div>
+        <div class="ca">
+          <!-- Write -->
+          <div class="wp" id="WP">
+            <div class="wtb">
+              <button class="wb" onclick="ft('bold')"><b>B</b></button>
+              <button class="wb" onclick="ft('italic')"><i>I</i></button>
+              <button class="wb" onclick="ft('underline')"><u>U</u></button>
+              <div class="ws"></div>
+              <button class="wb" onclick="ft('formatBlock','h2')">H1</button>
+              <button class="wb" onclick="ft('formatBlock','h3')">H2</button>
+              <div class="ws"></div>
+              <button class="wb" onclick="ft('insertUnorderedList')">• List</button>
+              <button class="wb" onclick="ft('insertOrderedList')">1. List</button>
+              <div class="ws"></div>
+              <button class="wb" onclick="ft('justifyLeft')">←</button>
+              <button class="wb" onclick="ft('justifyCenter')">↔</button>
+              <button class="wb" onclick="ft('justifyRight')">→</button>
+            </div>
+            <div class="paper"><div class="ed" id="ED" contenteditable="true" data-ph="Begin your entry..."></div></div>
+          </div>
+          <!-- Draw -->
+          <div class="dp" id="DP" style="display:none">
+            <div class="dtb">
+              <div id="DCS"></div>
+              <div class="ws"></div>
+              <button class="wb on" id="pnB" onclick="setTool('pen')">Pen</button>
+              <button class="wb" id="hlB" onclick="setTool('hl')">Hi-lite</button>
+              <button class="wb" id="erB" onclick="setTool('er')">Erase</button>
+              <div class="ws"></div>
+              <input type="range" class="dsz" id="DSZ" min="1" max="40" value="4">
+              <div class="ws"></div>
+              <button class="wb" onclick="clearCanvas()">Clear</button>
+              <button class="wb" onclick="saveDrawing()">Save</button>
+            </div>
+            <div class="dcw" id="DCW"><canvas id="CV"></canvas></div>
+          </div>
+          <!-- Photos -->
+          <div class="ph" id="PH" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Calendar -->
+<div class="cov" id="CAL" onclick="if(event.target===this)closeCal()">
+  <div class="cm">
+    <div class="ch"><button class="cn" onclick="calNav(-1)">‹</button><div class="cttl" id="CTT"></div><button class="cn" onclick="calNav(1)">›</button></div>
+    <div class="cg" id="CG"></div>
+    <button class="ccls" onclick="closeCal()">Close</button>
+  </div>
+</div>
+
+<!-- New Book -->
+<div class="mov" id="NBM">
+  <div class="mod">
+    <h3>Create a new book</h3>
+    <label>Title</label><input class="mi" id="NBT" placeholder="e.g. Summer 2025...">
+    <label>Spine colour</label><div class="cpr" id="CPR"></div>
+    <div class="mbs"><button class="bc" onclick="closeNBM()">Cancel</button><button class="bcr" onclick="createBook()">Create ✦</button></div>
+  </div>
+</div>
+
+<!-- Book Lock -->
+<div class="mov" id="BLM">
+  <div class="mod">
+    <h3 id="BLT">Lock this book</h3>
+    <div class="pds"><div class="pdi" id="bd0"></div><div class="pdi" id="bd1"></div><div class="pdi" id="bd2"></div><div class="pdi" id="bd3"></div></div>
+    <div class="mer" id="BLE"></div>
+    <div class="pp2">
+      <button class="p2" onclick="blPin('1')">1</button><button class="p2" onclick="blPin('2')">2</button><button class="p2" onclick="blPin('3')">3</button>
+      <button class="p2" onclick="blPin('4')">4</button><button class="p2" onclick="blPin('5')">5</button><button class="p2" onclick="blPin('6')">6</button>
+      <button class="p2" onclick="blPin('7')">7</button><button class="p2" onclick="blPin('8')">8</button><button class="p2" onclick="blPin('9')">9</button>
+      <button class="p2" onclick="blPin('c')" style="font-size:.64rem;color:var(--mut)">CLR</button>
+      <button class="p2" onclick="blPin('0')">0</button><button class="p2" onclick="blPin('b')">⌫</button>
+    </div>
+    <div class="mbs"><button class="bc" onclick="closeBLM()">Cancel</button><button class="bc" id="RLB" style="display:none;color:var(--red)" onclick="removeBookLock()">Remove Lock</button></div>
+  </div>
+</div>
+
+<!-- Book Unlock -->
+<div class="mov" id="BUM">
+  <div class="mod">
+    <h3 id="BUT">🔒 Book is locked</h3>
+    <div class="pds"><div class="pdi" id="bu0"></div><div class="pdi" id="bu1"></div><div class="pdi" id="bu2"></div><div class="pdi" id="bu3"></div></div>
+    <div class="mer" id="BUE"></div>
+    <div class="pp2">
+      <button class="p2" onclick="buPin('1')">1</button><button class="p2" onclick="buPin('2')">2</button><button class="p2" onclick="buPin('3')">3</button>
+      <button class="p2" onclick="buPin('4')">4</button><button class="p2" onclick="buPin('5')">5</button><button class="p2" onclick="buPin('6')">6</button>
+      <button class="p2" onclick="buPin('7')">7</button><button class="p2" onclick="buPin('8')">8</button><button class="p2" onclick="buPin('9')">9</button>
+      <button class="p2" onclick="buPin('c')" style="font-size:.64rem;color:var(--mut)">CLR</button>
+      <button class="p2" onclick="buPin('0')">0</button><button class="p2" onclick="buPin('b')">⌫</button>
+    </div>
+    <div class="mbs"><button class="bc" onclick="closeBUM()">Cancel</button></div>
+  </div>
+</div>
+
+<!-- Export -->
+<div class="mov" id="EXM">
+  <div class="mod">
+    <h3>📄 Export as PDF</h3>
+    <div class="exw" id="EXP">Preparing...<div class="pbw"><div class="pb" id="PRG"></div></div></div>
+    <div class="mbs"><button class="bc" onclick="$('#EXM').removeClass('on')">Close</button></div>
+  </div>
+</div>
+
+<input type="file" id="PHI" accept="image/*" style="display:none" multiple>
+
+<script>
+// ══════════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════════
+const API = 'api.php';
+
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+let user = null;
+let books = [], cBid = null, cPid = null, cTab = 'w', pg = null;
+let dTool = 'pen', dColor = '#1a1510', dSize = 4, drawing = false, lx = 0, ly = 0, sTO = null;
+let calY = new Date().getFullYear(), calM = new Date().getMonth(), calData = [];
+const COLORS  = ['#c0543a','#d4a84b','#5a8c5a','#4a7ab5','#9b6eb5','#c08050','#5ab5b5','#b55a8c'];
+const DCOLS   = ['#1a1510','#c0543a','#d4a84b','#5a8c5a','#4a7ab5','#9b6eb5','#ffffff','#888888'];
+let pickedColor = COLORS[0];
+
+// ══════════════════════════════════════════════
+// API
+// ══════════════════════════════════════════════
+function api(method, action, data, id, extra) {
+  let url = API + '?action=' + action;
+  if (id)    url += '&id=' + id;
+  if (extra) url += '&' + extra;
+  return new Promise((ok, fail) => {
+    $.ajax({
+      url, method,
+      contentType: 'application/json',
+      xhrFields: { withCredentials: true },
+      data: data ? JSON.stringify(data) : undefined,
+      success: ok,
+      error(xhr) { fail(new Error(xhr.responseJSON?.error || 'Request failed')); }
+    });
+  });
+}
+
+// ══════════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════════
+async function boot() {
+  try {
+    user = await api('GET', 'me');
+  } catch {
+    window.location.href = 'login.html';
+    return;
+  }
+  // Fetch avatar separately in background (profile_api.php)
+  $.ajax({
+    url: 'profile_api.php?action=profile',
+    method: 'GET',
+    xhrFields: { withCredentials: true },
+    success(res) {
+      if (res.user?.avatar) user.avatar = res.user.avatar;
+    }
+  });
+  initUI();
+  showPin();
+}
+
+function logout() {
+  api('GET', 'logout').finally(() => window.location.href = 'login.html');
+}
+
+function lockApp() { $('#APP').hide(); showPin(); }
+
+// ══════════════════════════════════════════════
+// PIN
+// ══════════════════════════════════════════════
+let pe = '', pm = 'enter', pt2 = '';
+
+function updDots(s, pfx) {
+  pfx = pfx || 'pd';
+  for (let i = 0; i < 4; i++) $('#' + pfx + i).toggleClass('on', i < s.length);
+}
+
+function showPin() {
+  const has = !!user.app_pin;
+  $('#psub').text(has ? 'Enter PIN to unlock' : 'Create a 4-digit PIN');
+  $('#spb').toggle(has);
+  pe = ''; pm = has ? 'enter' : 'set1'; updDots('');
+  $('#PIN').css('display', 'flex'); $('#APP').hide();
+}
+
+function kp(v) {
+  if (v === 'c') pe = '';
+  else if (v === 'b') pe = pe.slice(0, -1);
+  else if (pe.length < 4) pe += v;
+  updDots(pe); $('#perr').text('');
+  if (pe.length === 4) setTimeout(handlePin, 100);
+}
+
+async function handlePin() {
+  if (pm === 'enter') {
+    if (pe === user.app_pin || !user.app_pin) showApp();
+    else { $('#perr').text('Incorrect PIN'); pe = ''; updDots(''); shake('PIN'); }
+  } else if (pm === 'set1') {
+    pt2 = pe; pe = ''; updDots(''); pm = 'set2'; $('#psub').text('Confirm your PIN');
+  } else {
+    if (pe === pt2) {
+      await api('POST', 'setpin', { pin: pe });
+      user.app_pin = pe; showApp();
+    } else {
+      $('#perr').text("PINs don't match"); pe = ''; pt2 = ''; updDots('');
+      pm = 'set1'; $('#psub').text('Create a 4-digit PIN'); shake('PIN');
+    }
+  }
+}
+
+function setSP() { pm = 'set1'; pe = ''; updDots(''); $('#psub').text('Create a new PIN'); $('#perr').text(''); }
+function shake(id) { const el = document.getElementById(id); el.style.animation = 'none'; el.offsetHeight; el.style.animation = 'shake .4s ease'; }
+
+function showApp() {
+  $('#PIN').hide(); $('#APP').show();
+  $('#UN').text(user.name);
+  $('#UD').text(new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' }));
+  // Show avatar in profile circle if user has one
+  if (user.avatar) {
+    $('#PROF-BTN').html('<img src="' + user.avatar + '" alt="avatar">');
+  } else {
+    $('#PROF-BTN').text(user.name?.[0]?.toUpperCase() || '👤');
+  }
+  loadBooks();
+}
+
+// ══════════════════════════════════════════════
+// BOOKS
+// ══════════════════════════════════════════════
+async function loadBooks() {
+  books = await api('GET', 'books');
+  renderBooks();
+}
+
+function gBook(id) { return books.find(b => b.id == (id || cBid)); }
+
+function renderBooks() {
+  const el = $('#BL').empty();
+  if (!books.length) { el.html('<div style="padding:1rem;font-size:.72rem;color:var(--mut);text-align:center;font-style:italic">No books yet</div>'); return; }
+  books.forEach(b => {
+    const d = $('<div>').addClass('bi' + (b.id == cBid ? ' on' : ''))
+      .html(`<div class="bsp" style="background:${b.color}"></div>
+             <div class="bn"><div class="bt">${b.pin ? '🔒 ' : ''}${esc(b.title)}</div>
+             <div class="bm">${b.page_count} page${b.page_count != 1 ? 's' : ''}</div></div>
+             <button class="bdel">×</button>`);
+    d.on('click', () => tryOpenBook(b.id));
+    d.find('.bdel').on('click', e => { e.stopPropagation(); deleteBook(b.id); });
+    el.append(d);
+  });
+}
+
+function tryOpenBook(id) {
+  const b = gBook(id);
+  if (b.pin) {
+    pendingBookId = id; buE = ''; updDots('', 'bu');
+    $('#BUT').text(`"${b.title}" is locked`); $('#BUE').text('');
+    $('#BUM').addClass('on');
+  } else openBook(id);
+}
+
+async function openBook(id) {
+  cBid = id; const b = gBook();
+  $('#EMP').hide(); $('#EW').show();
+  $('#BDT').css('background', b.color);
+  $('#BNM').val(b.title);
+  renderBooks();
+  const pages = await api('GET', 'pages', null, null, 'book_id=' + id);
+  b._pages = pages; renderPages(pages);
+  if (!pages.length) await newPage(false);
+  else await openPage(pages[0].id);
+}
+
+function openNBM() { $('#NBT').val(''); $('#NBM').addClass('on'); setTimeout(() => $('#NBT').focus(), 180); }
+function closeNBM() { $('#NBM').removeClass('on'); }
+
+async function createBook() {
+  const t = $('#NBT').val().trim() || 'Untitled Book';
+  const b = await api('POST', 'books', { title: t, color: pickedColor });
+  b.page_count = 0; books.push(b); closeNBM(); renderBooks(); openBook(b.id);
+}
+
+async function deleteBook(id) {
+  if (!confirm('Delete this book and all its pages?')) return;
+  await api('DELETE', 'books', null, id);
+  books = books.filter(b => b.id != id);
+  if (cBid == id) { cBid = null; cPid = null; pg = null; $('#EMP').show(); $('#EW').hide(); }
+  renderBooks();
+}
+
+$('#BNM').on('input', function () {
+  const b = gBook(); if (!b) return; b.title = this.value; markSaving();
+  clearTimeout(sTO); sTO = setTimeout(async () => { await api('PUT', 'books', { title: b.title }, cBid); markSaved(); renderBooks(); }, 900);
+});
+
+// ══════════════════════════════════════════════
+// BOOK LOCK
+// ══════════════════════════════════════════════
+let blE = '', blM = 'set', blT = '';
+function openBLM() {
+  const b = gBook(); blE = ''; blT = ''; blM = 'set'; updDots('', 'bd');
+  $('#BLT').text(b.pin ? 'Change book PIN' : 'Lock this book');
+  $('#BLE').text(''); $('#RLB').toggle(!!b.pin); $('#BLM').addClass('on');
+}
+function closeBLM() { $('#BLM').removeClass('on'); }
+function blPin(v) {
+  if (v === 'c') blE = ''; else if (v === 'b') blE = blE.slice(0, -1); else if (blE.length < 4) blE += v;
+  updDots(blE, 'bd'); $('#BLE').text('');
+  if (blE.length === 4) setTimeout(async () => {
+    if (blM === 'set') { blT = blE; blE = ''; updDots('', 'bd'); blM = 'confirm'; $('#BLT').text('Confirm PIN'); }
+    else if (blE === blT) { const b = gBook(); b.pin = blE; await api('PUT', 'books', { pin: blE }, cBid); renderBooks(); closeBLM(); }
+    else { $('#BLE').text("PINs don't match"); blE = ''; blT = ''; blM = 'set'; updDots('', 'bd'); $('#BLT').text('Set PIN'); }
+  }, 100);
+}
+async function removeBookLock() { const b = gBook(); b.pin = null; await api('PUT', 'books', { pin: null }, cBid); renderBooks(); closeBLM(); }
+
+let pendingBookId = null, buE = '';
+function closeBUM() { $('#BUM').removeClass('on'); pendingBookId = null; buE = ''; }
+function buPin(v) {
+  if (v === 'c') buE = ''; else if (v === 'b') buE = buE.slice(0, -1); else if (buE.length < 4) buE += v;
+  updDots(buE, 'bu'); $('#BUE').text('');
+  if (buE.length === 4) setTimeout(() => {
+    const b = gBook(pendingBookId);
+    if (buE === b.pin) { closeBUM(); openBook(pendingBookId); }
+    else { $('#BUE').text('Wrong PIN'); buE = ''; updDots('', 'bu'); }
+  }, 100);
+}
+
+// ══════════════════════════════════════════════
+// PAGES
+// ══════════════════════════════════════════════
+async function newPage(go) {
+  go = go !== false;
+  const now = new Date();
+  const p = await api('POST', 'pages', {
+    book_id: cBid,
+    date_label: now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    date_iso: now.toISOString().slice(0, 10)
+  });
+  // Guarantee clean state
+  p.photos  = [];
+  p.content = '';
+  p.drawing = null;
+  const b = gBook();
+  b.page_count = (b.page_count || 0) + 1;
+  if (!b._pages) b._pages = [];
+  b._pages.push(p);
+  renderPages(b._pages);
+  renderBooks();
+  if (go) {
+    // Set pg directly — no need to re-fetch a page we just created
+    cPid = p.id;
+    pg   = p;
+    renderPages(b._pages);
+    loadPageContent();
+  }
+}
+
+async function openPage(id) {
+  // Save drawing before leaving current page
+  clearTimeout(sTO);
+  if (pg && cPid && cTab === 'd') {
+    const canvas = $('#CV')[0];
+    if (canvas && canvas.width > 0) {
+      pg.drawing = canvas.toDataURL('image/png');
+      await api('PUT', 'pages', { drawing: pg.drawing }, cPid);
+    }
+  }
+  cPid = id;
+  renderPages(gBook()?._pages || []);
+  pg = await api('GET', 'pages', null, id);
+  // Guarantee photos is always an array no matter what PHP sends
+  if (!Array.isArray(pg.photos)) pg.photos = [];
+  if (pg.content === undefined || pg.content === null) pg.content = '';
+  loadPageContent();
+}
+
+function renderPages(pages) {
+  const el = $('#PL').empty();
+  (pages || []).forEach(p => {
+    const pv = p.preview ? p.preview.replace(/<[^>]+>/g, '').slice(0, 32) : '(empty)';
+    const d = $('<div>').addClass('pi' + (p.id == cPid ? ' on' : ''))
+      .html(`<div class="pii"><div class="pid">${p.date_label}</div><div class="ppv">${esc(pv)}</div></div><button class="pdl">×</button>`);
+    d.on('click', () => openPage(p.id));
+    d.find('.pdl').on('click', e => { e.stopPropagation(); deletePage(p.id); });
+    el.append(d);
+  });
+}
+
+async function deletePage(id) {
+  const b = gBook();
+  if ((b._pages || []).length === 1) { alert("Can't delete the only page"); return; }
+  await api('DELETE', 'pages', null, id);
+  b._pages = b._pages.filter(p => p.id != id); b.page_count = Math.max(0, b.page_count - 1);
+  if (cPid == id) { cPid = null; pg = null; await openPage(b._pages[0].id); }
+  renderPages(b._pages); renderBooks();
+}
+
+// ══════════════════════════════════════════════
+// TABS
+// ══════════════════════════════════════════════
+function swTab(t) {
+  cTab = t;
+  $('.tab').each(function () { $(this).toggleClass('on', $(this).data('t') === t); });
+  $('#WP').toggle(t === 'w'); $('#DP').toggle(t === 'd'); $('#PH').toggle(t === 'p');
+  if (t === 'd') initCanvas(); if (t === 'p') renderPhotos();
+}
+
+// ══════════════════════════════════════════════
+// WRITE
+// ══════════════════════════════════════════════
+function loadPageContent() {
+  if (!pg) return;
+  // Always load text
+  $('#ED').html(pg.content || '');
+  // Always restore drawing into canvas (even if not on draw tab yet)
+  const c = $('#CV')[0];
+  if (c) {
+    const ctx = c.getContext('2d');
+    ctx.clearRect(0, 0, c.width, c.height);
+    if (pg.drawing && pg.drawing.length > 100) restoreDraw(pg.drawing);
+  }
+  // Reload photos
+  renderPhotos();
+}
+
+$('#ED').on('input', function () {
+  if (!pg) return;
+  pg.content = $(this).html();
+  const b = gBook(); const p = b?._pages?.find(p => p.id == cPid);
+  if (p) p.preview = pg.content.replace(/<[^>]+>/g, '').slice(0, 80);
+  renderPages(b?._pages || []);
+  markSaving(); clearTimeout(sTO);
+  sTO = setTimeout(async () => { await api('PUT', 'pages', { content: pg.content }, cPid); markSaved(); }, 900);
+});
+
+function ft(cmd, val) { $('#ED').focus(); document.execCommand(cmd, false, val || null); }
+function markSaving() { $('#SV').text('Saving...').removeClass('saved').addClass('saving'); }
+function markSaved()  { $('#SV').text('Saved ✓').removeClass('saving').addClass('saved'); setTimeout(() => $('#SV').text('Saved').removeClass('saved'), 1400); }
+
+// ══════════════════════════════════════════════
+// DRAW
+// ══════════════════════════════════════════════
+function initCanvas() {
+  const w = $('#DCW')[0]; const c = $('#CV')[0];
+  const prevW = c.width, prevH = c.height;
+  const newW = w.clientWidth, newH = w.clientHeight;
+  // Only resize if dimensions actually changed (resizing wipes canvas)
+  if (prevW !== newW || prevH !== newH) {
+    c.width = newW; c.height = newH;
+    // Restore drawing after resize
+    if (pg?.drawing && pg.drawing.length > 100) restoreDraw(pg.drawing);
+  }
+  bindCanvas();
+}
+function restoreDraw(url) {
+  const c = $('#CV')[0]; const ctx = c.getContext('2d');
+  ctx.clearRect(0, 0, c.width, c.height);
+  const img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0); img.src = url;
+}
+function setTool(t) {
+  dTool = t;
+  $('#pnB').toggleClass('on', t === 'pen'); $('#hlB').toggleClass('on', t === 'hl'); $('#erB').toggleClass('on', t === 'er');
+}
+function bindCanvas() {
+  const c = $('#CV')[0];
+  c.onmousedown = e => { drawing = true; [lx, ly] = canvasPos(e); };
+  c.onmousemove = e => { if (drawing) drawLine(canvasPos(e)); };
+  c.onmouseup   = () => { drawing = false; saveDrawing(); };
+  c.onmouseleave = () => { if (drawing) { drawing = false; saveDrawing(); } };
+  c.ontouchstart = e => { e.preventDefault(); drawing = true; [lx, ly] = canvasPos(e); };
+  c.ontouchmove  = e => { e.preventDefault(); if (drawing) drawLine(canvasPos(e)); };
+  c.ontouchend   = () => { drawing = false; saveDrawing(); };
+}
+function canvasPos(e) { const r = $('#CV')[0].getBoundingClientRect(); const s = e.touches ? e.touches[0] : e; return [s.clientX - r.left, s.clientY - r.top]; }
+function drawLine([x, y]) {
+  const c = $('#CV')[0]; const ctx = c.getContext('2d');
+  ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(x, y);
+  if      (dTool === 'er') { ctx.globalCompositeOperation = 'destination-out'; ctx.lineWidth = dSize * 3; ctx.strokeStyle = 'rgba(0,0,0,1)'; }
+  else if (dTool === 'hl') { ctx.globalCompositeOperation = 'source-over'; ctx.lineWidth = dSize * 4; ctx.strokeStyle = hexA(dColor, .3); }
+  else                     { ctx.globalCompositeOperation = 'source-over'; ctx.lineWidth = dSize; ctx.strokeStyle = dColor; }
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
+  lx = x; ly = y;
+}
+function clearCanvas() { const c = $('#CV')[0]; c.getContext('2d').clearRect(0, 0, c.width, c.height); if (pg) { pg.drawing = null; api('PUT', 'pages', { drawing: null }, cPid); markSaved(); } }
+function saveDrawing() {
+  if (!pg) return;
+  pg.drawing = $('#CV')[0].toDataURL('image/png'); markSaving();
+  clearTimeout(sTO); sTO = setTimeout(async () => { await api('PUT', 'pages', { drawing: pg.drawing }, cPid); markSaved(); }, 700);
+}
+
+// ══════════════════════════════════════════════
+// PHOTOS
+// ══════════════════════════════════════════════
+function renderPhotos() {
+  const el = $('#PH').empty();
+  const photos = pg?.photos || [];
+  photos.forEach(ph => {
+    const c = $('<div>').addClass('pc').html(`<img src="${ph.data}" loading="lazy"><button class="pcd">×</button>`);
+    c.find('.pcd').on('click', () => deletePhoto(ph.id));
+    el.append(c);
+  });
+  const a = $('<div>').addClass('pa').html('<span>📷</span><p>Add Photo</p>');
+  a.on('click', () => $('#PHI').click());
+  el.append(a);
+}
+$('#PHI').on('change', async function () {
+  if (!pg) return;
+  if (!pg.photos) pg.photos = [];
+  for (const f of Array.from(this.files)) {
+    try {
+      const src = await new Promise((resolve, reject) => {
+        const rd = new FileReader();
+        rd.onload = ev => resolve(ev.target.result);
+        rd.onerror = () => reject(new Error('File read failed'));
+        rd.readAsDataURL(f);
+      });
+      const res = await api('POST', 'photos', { page_id: cPid, data: src });
+      pg.photos.push({ id: res.id, data: src });
+      renderPhotos(); markSaved();
+    } catch (err) {
+      alert('Photo upload failed: ' + err.message);
+    }
+  }
+  $(this).val('');
+});
+async function deletePhoto(id) {
+  await api('DELETE', 'photos', null, id);
+  pg.photos = pg.photos.filter(p => p.id != id); renderPhotos();
+}
+
+// ══════════════════════════════════════════════
+// CALENDAR
+// ══════════════════════════════════════════════
+async function openCal() {
+  calY = new Date().getFullYear(); calM = new Date().getMonth();
+  calData = await api('GET', 'calendar');
+  renderCal(); $('#CAL').addClass('on');
+}
+function closeCal() { $('#CAL').removeClass('on'); }
+function calNav(d) { calM += d; if (calM > 11) { calM = 0; calY++; } else if (calM < 0) { calM = 11; calY--; } renderCal(); }
+function renderCal() {
+  const MN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  $('#CTT').text(MN[calM] + ' ' + calY);
+  const g = $('#CG').empty();
+  ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(d => g.append($('<div>').addClass('cdh').text(d)));
+  const eSet = new Set(calData.map(e => e.date_iso?.slice(0, 10)));
+  const td = new Date().toISOString().slice(0, 10);
+  const fd = new Date(calY, calM, 1).getDay(), dim = new Date(calY, calM + 1, 0).getDate(), pd = new Date(calY, calM, 0).getDate();
+  for (let i = fd - 1; i >= 0; i--) g.append($('<div>').addClass('cd om').text(pd - i));
+  for (let d = 1; d <= dim; d++) {
+    const ds = calY + '-' + String(calM + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+    const el = $('<div>').addClass('cd' + (eSet.has(ds) ? ' hase' : '') + (ds === td ? ' tod' : '')).text(d);
+    if (eSet.has(ds)) el.attr('title', 'Has entry').on('click', () => jumpToDate(ds));
+    g.append(el);
+  }
+  const tot = Math.ceil((fd + dim) / 7) * 7;
+  for (let d = 1; d <= tot - fd - dim; d++) g.append($('<div>').addClass('cd om').text(d));
+}
+async function jumpToDate(ds) {
+  const entry = calData.find(e => e.date_iso?.startsWith(ds)); if (!entry) return;
+  closeCal(); const b = gBook(entry.book_id);
+  if (b?.pin) { pendingBookId = b.id; buE = ''; updDots('', 'bu'); $('#BUT').text('"' + b.title + '" is locked'); $('#BUM').addClass('on'); return; }
+  await openBook(entry.book_id);
+  const p = (gBook(entry.book_id)?._pages || []).find(p => p.date_iso?.startsWith(ds));
+  if (p) await openPage(p.id);
+}
+
+// ══════════════════════════════════════════════
+// PDF EXPORT
+// ══════════════════════════════════════════════
+function h2r(h) { return { r: parseInt(h.slice(1, 3), 16), g: parseInt(h.slice(3, 5), 16), b: parseInt(h.slice(5, 7), 16) }; }
+async function exportPDF() {
+  const b = gBook(); if (!b) return;
+
+  // ── 1. Flush whatever is currently open so nothing is missed ──
+  clearTimeout(sTO);
+  if (pg && cPid) {
+    pg.content = $('#ED').html();
+    if (cTab === 'd') pg.drawing = $('#CV')[0]?.toDataURL('image/png') || pg.drawing;
+    await api('PUT', 'pages', { content: pg.content, drawing: pg.drawing || null }, cPid);
+  }
+
+  $('#EXP').html('Generating PDF...<div class="pbw"><div class="pb" id="PRG" style="width:0%"></div></div>');
+  $('#EXM').addClass('on');
+  await new Promise(r => setTimeout(r, 120));
+
+  try {
+    // ── 2. Load every page fresh from the DB ──
+    const pages = b._pages || [];
+    if (!pages.length) { $('#EXP').html('<span style="color:var(--red)">No pages to export.</span>'); return; }
+
+    const full = [];
+    for (let i = 0; i < pages.length; i++) {
+      const p = await api('GET', 'pages', null, pages[i].id);
+      full.push(p);
+      $('#PRG').css('width', Math.round(((i + 1) / pages.length) * 50) + '%');
+      await new Promise(r => setTimeout(r, 10));
+    }
+
+    // ── 3. Build the PDF ──
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const pw = 210, ph = 297, mg = 18, tot = full.length;
+
+    // Cover page
+    doc.setFillColor(28, 26, 24); doc.rect(0, 0, pw, ph, 'F');
+    const rgb = h2r(b.color); doc.setFillColor(rgb.r, rgb.g, rgb.b); doc.rect(0, 0, 8, ph, 'F');
+    doc.setTextColor(212, 168, 75); doc.setFont('helvetica', 'bolditalic'); doc.setFontSize(28);
+    doc.text(b.title, pw / 2, ph / 2 - 12, { align: 'center' });
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(138, 128, 112);
+    doc.text(tot + ' page' + (tot !== 1 ? 's' : ''), pw / 2, ph / 2 + 4, { align: 'center' });
+    doc.text(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), pw / 2, ph / 2 + 12, { align: 'center' });
+
+    function newPaperPage() {
+      doc.addPage();
+      doc.setFillColor(250, 246, 238); doc.rect(0, 0, pw, ph, 'F');
+      doc.setDrawColor(232, 223, 200); doc.setLineWidth(0.2);
+      for (let y = 32; y < ph - 8; y += 8) doc.line(mg, y, pw - mg, y);
+      doc.setDrawColor(232, 176, 160); doc.line(mg + 12, 8, mg + 12, ph - 8);
+    }
+
+    for (let i = 0; i < tot; i++) {
+      const p = full[i];
+      newPaperPage();
+
+      // Date + page number
+      doc.setTextColor(192, 84, 58); doc.setFont('helvetica', 'italic'); doc.setFontSize(9);
+      doc.text(p.date_label || '', pw - mg, 14, { align: 'right' });
+      doc.setTextColor(138, 128, 112); doc.setFontSize(7);
+      doc.text('Page ' + (i + 1) + ' of ' + tot, pw / 2, ph - 5, { align: 'center' });
+
+      let curY = 22;
+
+      // ── TEXT ──
+      const rawText = (p.content || '').trim();
+      const plainText = rawText
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<\/p>/gi, '\n')
+        .replace(/<\/h[1-6]>/gi, '\n')
+        .replace(/<\/div>/gi, '\n')
+        .replace(/<\/li>/gi, '\n')
+        .replace(/<[^>]+>/g, '')
+        .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/&#39;/g, "'")
+        .replace(/\n{3,}/g, '\n\n').trim();
+
+      if (plainText) {
+        doc.setTextColor(26, 21, 16); doc.setFont('helvetica', 'normal'); doc.setFontSize(11);
+        const lines = doc.splitTextToSize(plainText, pw - mg * 2 - 14);
+        // if text overflows page, split across pages
+        const lineH = 5.8;
+        let lineIdx = 0;
+        while (lineIdx < lines.length) {
+          const available = Math.floor((ph - curY - 14) / lineH);
+          const chunk = lines.slice(lineIdx, lineIdx + available);
+          doc.text(chunk, mg + 16, curY);
+          lineIdx += available;
+          curY += chunk.length * lineH;
+          if (lineIdx < lines.length) { newPaperPage(); curY = 22; }
+        }
+        curY += 6;
+      }
+
+      // ── DRAWING ──
+      if (p.drawing && p.drawing.length > 100) {
+        try {
+          const dh = 70, dw = pw - mg * 2;
+          if (curY + dh > ph - 16) { newPaperPage(); curY = 22; }
+          doc.addImage(p.drawing, 'PNG', mg, curY, dw, dh);
+          curY += dh + 8;
+        } catch (ex) { console.warn('Drawing embed failed:', ex.message); }
+      }
+
+      // ── PHOTOS ──
+      const photos = p.photos || [];
+      if (photos.length) {
+        const ps = 58, gap = 5, perRow = 3;
+        let px = mg + 14, py = curY;
+        for (let j = 0; j < photos.length; j++) {
+          if (py + ps > ph - 14) { newPaperPage(); py = 22; px = mg + 14; }
+          const imgData = photos[j].data || '';
+          if (imgData) {
+            const fmt = imgData.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+            try { doc.addImage(imgData, fmt, px, py, ps, ps); }
+            catch (ex) {
+              try { doc.addImage(imgData, fmt === 'PNG' ? 'JPEG' : 'PNG', px, py, ps, ps); }
+              catch (ex2) { console.warn('Photo embed failed:', ex2.message); }
+            }
+          }
+          px += ps + gap;
+          if ((j + 1) % perRow === 0) { px = mg + 14; py += ps + gap; }
+        }
+      }
+
+      $('#PRG').css('width', Math.round(50 + ((i + 1) / tot) * 50) + '%');
+      await new Promise(r => setTimeout(r, 12));
+    }
+
+    doc.save(b.title.replace(/[^a-z0-9]/gi, '_').slice(0, 40) + '_diary.pdf');
+    $('#EXP').html('✓ PDF downloaded!<div class="pbw"><div class="pb" style="width:100%;background:var(--grn)"></div></div>');
+
+  } catch (err) {
+    console.error('PDF export error:', err);
+    $('#EXP').html('<span style="color:var(--red)">Failed: ' + err.message + '</span>');
+  }
+}
+
+// ══════════════════════════════════════════════
+// INIT UI
+// ══════════════════════════════════════════════
+function initUI() {
+  // Colour pickers for new book
+  const cpr = $('#CPR').empty();
+  COLORS.forEach((c, i) => {
+    const d = $('<div>').addClass('cs' + (i === 0 ? ' on' : '')).css('background', c)
+      .on('click', function () { pickedColor = c; $('.cs').removeClass('on'); $(this).addClass('on'); });
+    cpr.append(d);
+  });
+  // Draw colour dots
+  const dcs = $('#DCS').empty();
+  DCOLS.forEach((c, i) => {
+    const d = $('<div>').addClass('dc' + (i === 0 ? ' on' : '')).css('background', c === '#ffffff' ? '#ccc' : c)
+      .on('click', function () { dColor = c; $('.dc').removeClass('on'); $(this).addClass('on'); setTool('pen'); });
+    dcs.append(d);
+  });
+  $('#DSZ').on('input', function () { dSize = +this.value; });
+  // Close modals on backdrop click
+  $('.mov').on('click', function (e) { if (e.target === this) $(this).removeClass('on'); });
+  $('#NBT').on('keydown', e => { if (e.key === 'Enter') createBook(); if (e.key === 'Escape') closeNBM(); });
+  $(window).on('resize', () => { if (cTab === 'd') initCanvas(); });
+  // Keyboard PIN
+  $(document).on('keydown', e => {
+    if ($('#PIN').is(':visible')) {
+      if (e.key >= '0' && e.key <= '9') kp(e.key);
+      else if (e.key === 'Backspace') kp('b');
+      else if (e.key === 'Escape') kp('c');
+    }
+  });
+}
+
+// ══════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function hexA(h, a) { const { r, g, b } = h2r(h); return `rgba(${r},${g},${b},${a})`; }
+
+boot();
+</script>
+</body>
+</html>
