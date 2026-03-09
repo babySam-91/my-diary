@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>My Diary — Sign In</title>
+<link href="https://fonts.googleapis.com/css2?family=Reenie+Beanie&family=Lora:ital,wght@0,400;1,400&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f0d0b; --card:#1a1714; --bdr:#2e2a24;
+  --gold:#c9963a; --gold2:#e8c97a;
+  --txt:#ede6d6; --mut:#7a7060; --red:#b84c35; --grn:#4a7a4a;
+}
+body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;padding:1rem}
+
+/* background grid */
+body::before{content:'';position:fixed;inset:0;background-image:repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(201,150,58,.05) 39px,rgba(201,150,58,.05) 40px);pointer-events:none;z-index:0}
+
+.card{position:relative;z-index:1;width:420px;max-width:100%;background:var(--card);border:1px solid var(--bdr);border-radius:18px;padding:2.6rem 2.4rem;box-shadow:0 30px 60px rgba(0,0,0,.5)}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);border-radius:18px 18px 0 0}
+
+.logo{font-family:'Reenie Beanie',cursive;font-size:3.6rem;color:var(--gold);text-align:center;line-height:1;display:block}
+.logo-sub{font-size:.65rem;color:var(--mut);letter-spacing:.22em;text-transform:uppercase;text-align:center;display:block;margin-bottom:2rem}
+
+/* tabs */
+.tabs{display:flex;background:#0a0907;border:1px solid var(--bdr);border-radius:9px;padding:3px;margin-bottom:1.8rem;gap:3px}
+.tab{flex:1;padding:.48rem;border:none;border-radius:6px;background:transparent;color:var(--mut);font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:500;cursor:pointer;transition:all .2s}
+.tab.on{background:var(--gold);color:#0a0907}
+
+/* form */
+.section{display:none}.section.on{display:block}
+.field{margin-bottom:1rem}
+.field label{display:block;font-size:.6rem;color:var(--mut);letter-spacing:.18em;text-transform:uppercase;margin-bottom:.38rem}
+.field input{width:100%;background:#0a0907;border:1px solid var(--bdr);color:var(--txt);padding:.62rem .85rem;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:.88rem;outline:none;transition:border-color .2s}
+.field input:focus{border-color:var(--gold)}
+.field input::placeholder{color:#3a342c}
+
+.btn{width:100%;padding:.68rem;background:var(--gold);color:#0a0907;border:none;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;margin-top:.4rem;transition:background .2s,transform .15s}
+.btn:hover{background:var(--gold2);transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+
+/* message */
+.msg{padding:.55rem .85rem;border-radius:6px;font-size:.76rem;margin-top:.85rem;text-align:center;font-weight:500;display:none}
+.msg.err{background:rgba(184,76,53,.12);border:1px solid rgba(184,76,53,.3);color:#e07060;display:block}
+.msg.ok{background:rgba(74,122,74,.12);border:1px solid rgba(74,122,74,.3);color:#7ab57a;display:block}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(0,0,0,.25);border-top-color:#0a0907;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:5px}
+</style>
+</head>
+<body>
+<div class="card">
+  <span class="logo">My Diary</span>
+  <span class="logo-sub">Your private space to write</span>
+
+  <div class="tabs">
+    <button class="tab on" onclick="swTab('login')">Sign In</button>
+    <button class="tab"    onclick="swTab('reg')">Create Account</button>
+  </div>
+
+  <!-- LOGIN -->
+  <div class="section on" id="s-login">
+    <div class="field"><label>Email</label><input type="email" id="l-email" placeholder="you@example.com"></div>
+    <div class="field"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••"></div>
+    <button class="btn" id="l-btn" onclick="doLogin()">Sign In</button>
+    <div class="msg" id="l-msg"></div>
+  </div>
+
+  <!-- REGISTER -->
+  <div class="section" id="s-reg">
+    <div class="field"><label>Your Name</label><input type="text" id="r-name" placeholder="e.g. Priya"></div>
+    <div class="field"><label>Email</label><input type="email" id="r-email" placeholder="you@example.com"></div>
+    <div class="field"><label>Password <small style="color:var(--mut);font-size:.58rem">(min 6 chars)</small></label><input type="password" id="r-pass" placeholder="••••••••"></div>
+    <button class="btn" id="r-btn" onclick="doRegister()">Create Account</button>
+    <div class="msg" id="r-msg"></div>
+  </div>
+</div>
+
+<script>
+const API = 'api.php';
+
+function swTab(t) {
+  $('.tab').removeClass('on');
+  $('.section').removeClass('on');
+  if (t === 'login') { $('.tab:eq(0)').addClass('on'); $('#s-login').addClass('on'); }
+  else               { $('.tab:eq(1)').addClass('on'); $('#s-reg').addClass('on'); }
+  $('.msg').hide().removeClass('err ok');
+}
+
+function showMsg(id, text, type) {
+  $('#' + id).text(text).removeClass('err ok').addClass(type).show();
+}
+
+function busy(id, loading, label) {
+  if (loading) $('#' + id).html('<span class="spin"></span>Please wait...').prop('disabled', true);
+  else         $('#' + id).text(label).prop('disabled', false);
+}
+
+function doLogin() {
+  const email = $('#l-email').val().trim();
+  const pass  = $('#l-pass').val();
+  if (!email || !pass) { showMsg('l-msg', 'Please fill in both fields', 'err'); return; }
+  busy('l-btn', true);
+  $.ajax({
+    url: API + '?action=login',
+    method: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify({ email, password: pass }),
+    success(res) {
+      showMsg('l-msg', 'Welcome back, ' + res.user.name + '!', 'ok');
+      setTimeout(() => window.location.href = 'dashboard.html', 700);
+    },
+    error(xhr) {
+      showMsg('l-msg', xhr.responseJSON?.error || 'Login failed', 'err');
+      busy('l-btn', false, 'Sign In');
+    }
+  });
+}
+
+function doRegister() {
+  const name  = $('#r-name').val().trim();
+  const email = $('#r-email').val().trim();
+  const pass  = $('#r-pass').val();
+  if (!name || !email || !pass) { showMsg('r-msg', 'Please fill in all fields', 'err'); return; }
+  if (pass.length < 6)          { showMsg('r-msg', 'Password must be at least 6 characters', 'err'); return; }
+  busy('r-btn', true);
+  $.ajax({
+    url: API + '?action=register',
+    method: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify({ name, email, password: pass }),
+    success(res) {
+      showMsg('r-msg', 'Account created! Redirecting...', 'ok');
+      setTimeout(() => window.location.href = 'dashboard.html', 700);
+    },
+    error(xhr) {
+      showMsg('r-msg', xhr.responseJSON?.error || 'Registration failed', 'err');
+      busy('r-btn', false, 'Create Account');
+    }
+  });
+}
+
+// Enter key support
+$(document).on('keydown', function(e) {
+  if (e.key !== 'Enter') return;
+  if ($('#s-login').hasClass('on')) doLogin();
+  else doRegister();
+});
+</script>
+</body>
+</html>

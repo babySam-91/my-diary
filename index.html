@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>My Diary — Your Private Space to Write</title>
+<link href="https://fonts.googleapis.com/css2?family=Reenie+Beanie&family=Lora:ital,wght@0,400;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f0d0b; --card:#1a1714; --bdr:#2e2a24;
+  --gold:#c9963a; --gold2:#e8c97a;
+  --txt:#ede6d6; --mut:#7a7060;
+}
+
+html{scroll-behavior:smooth}
+
+body{
+  min-height:100vh;
+  background:var(--bg);
+  color:var(--txt);
+  font-family:'DM Sans',sans-serif;
+  overflow-x:hidden;
+}
+
+/* Background ruled lines like a diary */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background-image:repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(201,150,58,.04) 39px,rgba(201,150,58,.04) 40px);
+  pointer-events:none;z-index:0;
+}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.9rem 2.4rem;
+  background:rgba(15,13,11,.85);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(201,150,58,.08);
+}
+.nav-logo{
+  font-family:'Reenie Beanie',cursive;
+  font-size:2.2rem;color:var(--gold);line-height:1;
+}
+.nav-links{display:flex;gap:.6rem;align-items:center}
+.nav-link{
+  padding:.42rem 1rem;
+  border-radius:7px;
+  font-size:.8rem;font-weight:500;
+  cursor:pointer;text-decoration:none;
+  transition:all .2s;
+}
+.nav-signin{
+  color:var(--mut);
+  border:1px solid transparent;
+}
+.nav-signin:hover{color:var(--txt);border-color:var(--bdr)}
+.nav-cta{
+  background:var(--gold);color:#0a0907;
+  border:1px solid var(--gold);
+}
+.nav-cta:hover{background:var(--gold2)}
+
+/* ── HERO ── */
+.hero{
+  position:relative;z-index:1;
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;
+  padding:6rem 1.5rem 4rem;
+}
+
+/* Glowing orb behind logo */
+.hero::after{
+  content:'';
+  position:absolute;
+  top:30%;left:50%;
+  transform:translate(-50%,-50%);
+  width:500px;height:500px;
+  background:radial-gradient(circle,rgba(201,150,58,.07) 0%,transparent 70%);
+  pointer-events:none;
+}
+
+.hero-badge{
+  display:inline-flex;align-items:center;gap:.5rem;
+  background:rgba(201,150,58,.08);
+  border:1px solid rgba(201,150,58,.2);
+  border-radius:99px;
+  padding:.3rem .9rem;
+  font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:1.8rem;
+}
+.hero-badge span{width:6px;height:6px;border-radius:50%;background:var(--gold);display:inline-block;animation:pulse 2s ease infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.hero-title{
+  font-family:'Reenie Beanie',cursive;
+  font-size:clamp(5rem,14vw,10rem);
+  color:var(--gold);
+  line-height:.9;
+  margin-bottom:1.2rem;
+  animation:fadeUp .8s ease both;
+}
+
+.hero-sub{
+  font-family:'Lora',serif;
+  font-style:italic;
+  font-size:clamp(1rem,2.5vw,1.35rem);
+  color:rgba(237,230,214,.6);
+  max-width:480px;
+  line-height:1.7;
+  margin-bottom:2.8rem;
+  animation:fadeUp .8s .15s ease both;
+}
+
+.hero-btns{
+  display:flex;gap:.8rem;flex-wrap:wrap;justify-content:center;
+  animation:fadeUp .8s .28s ease both;
+}
+
+.btn-primary{
+  padding:.75rem 2rem;
+  background:var(--gold);color:#0a0907;
+  border:none;border-radius:9px;
+  font-family:'DM Sans',sans-serif;
+  font-size:.9rem;font-weight:600;
+  cursor:pointer;text-decoration:none;
+  transition:background .2s,transform .15s,box-shadow .2s;
+  box-shadow:0 4px 24px rgba(201,150,58,.25);
+}
+.btn-primary:hover{background:var(--gold2);transform:translateY(-2px);box-shadow:0 8px 32px rgba(201,150,58,.35)}
+
+.btn-ghost{
+  padding:.75rem 2rem;
+  background:transparent;color:var(--txt);
+  border:1px solid var(--bdr);border-radius:9px;
+  font-family:'DM Sans',sans-serif;
+  font-size:.9rem;font-weight:500;
+  cursor:pointer;text-decoration:none;
+  transition:border-color .2s,color .2s,transform .15s;
+}
+.btn-ghost:hover{border-color:var(--gold);color:var(--gold);transform:translateY(-2px)}
+
+/* Scroll hint */
+.scroll-hint{
+  position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:.5rem;
+  color:var(--mut);font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;
+  animation:fadeUp 1s .6s ease both;
+}
+.scroll-arrow{width:1px;height:32px;background:linear-gradient(to bottom,var(--gold),transparent);animation:scrollArrow 1.5s ease infinite}
+@keyframes scrollArrow{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform:scaleY(1);transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+/* ── FEATURES ── */
+.section{
+  position:relative;z-index:1;
+  padding:5rem 1.5rem;
+  max-width:1100px;margin:0 auto;
+}
+
+.sec-label{
+  font-size:.62rem;letter-spacing:.28em;text-transform:uppercase;
+  color:var(--gold);text-align:center;margin-bottom:.7rem;
+}
+.sec-title{
+  font-family:'Lora',serif;
+  font-size:clamp(1.6rem,4vw,2.4rem);
+  text-align:center;color:var(--txt);
+  margin-bottom:.8rem;
+}
+.sec-desc{
+  text-align:center;color:var(--mut);
+  font-size:.9rem;line-height:1.7;
+  max-width:520px;margin:0 auto 3.5rem;
+}
+
+/* divider */
+.divider{
+  width:60px;height:1px;
+  background:linear-gradient(to right,transparent,var(--gold),transparent);
+  margin:0 auto 3.5rem;
+}
+
+.features-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:1.2rem;
+}
+
+.feat-card{
+  background:var(--card);
+  border:1px solid var(--bdr);
+  border-radius:14px;
+  padding:1.8rem;
+  position:relative;
+  overflow:hidden;
+  transition:border-color .25s,transform .25s,box-shadow .25s;
+}
+.feat-card::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(201,150,58,.3),transparent);
+}
+.feat-card:hover{
+  border-color:rgba(201,150,58,.3);
+  transform:translateY(-3px);
+  box-shadow:0 12px 36px rgba(0,0,0,.4);
+}
+.feat-icon{
+  font-size:1.8rem;margin-bottom:1rem;
+  display:block;
+}
+.feat-title{
+  font-family:'Lora',serif;
+  font-size:1.05rem;color:var(--txt);
+  margin-bottom:.5rem;
+}
+.feat-desc{
+  font-size:.82rem;color:var(--mut);line-height:1.65;
+}
+
+/* ── HOW IT WORKS ── */
+.steps{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:2rem;
+  counter-reset:steps;
+}
+.step{
+  text-align:center;
+  counter-increment:steps;
+}
+.step-num{
+  width:48px;height:48px;
+  border-radius:50%;
+  border:1px solid rgba(201,150,58,.3);
+  background:rgba(201,150,58,.06);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 1rem;
+  font-family:'Lora',serif;
+  font-size:1.1rem;color:var(--gold);
+}
+.step-title{
+  font-size:.88rem;font-weight:600;
+  color:var(--txt);margin-bottom:.4rem;
+}
+.step-desc{
+  font-size:.78rem;color:var(--mut);line-height:1.6;
+}
+/* connector line between steps */
+.steps-wrap{position:relative}
+.steps-wrap::before{
+  content:'';
+  position:absolute;
+  top:24px;left:calc(100%/6);right:calc(100%/6);
+  height:1px;
+  background:repeating-linear-gradient(90deg,rgba(201,150,58,.2) 0,rgba(201,150,58,.2) 6px,transparent 6px,transparent 12px);
+}
+
+/* ── CTA BAND ── */
+.cta-band{
+  position:relative;z-index:1;
+  margin:0 1.5rem 5rem;
+  background:var(--card);
+  border:1px solid var(--bdr);
+  border-radius:20px;
+  padding:3.5rem 2rem;
+  text-align:center;
+  overflow:hidden;
+}
+.cta-band::before{
+  content:'';
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 0%,rgba(201,150,58,.07) 0%,transparent 65%);
+}
+.cta-band::after{
+  content:'';
+  position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+.cta-band h2{
+  font-family:'Reenie Beanie',cursive;
+  font-size:clamp(2.5rem,7vw,4.5rem);
+  color:var(--gold);margin-bottom:.6rem;
+  position:relative;
+}
+.cta-band p{
+  color:var(--mut);font-size:.88rem;
+  margin-bottom:2rem;position:relative;
+  font-family:'Lora',serif;font-style:italic;
+}
+.cta-band .hero-btns{position:relative}
+
+/* ── FOOTER ── */
+footer{
+  position:relative;z-index:1;
+  text-align:center;
+  padding:2rem 1.5rem;
+  border-top:1px solid var(--bdr);
+  color:var(--mut);font-size:.72rem;
+  letter-spacing:.08em;
+}
+footer .f-logo{
+  font-family:'Reenie Beanie',cursive;
+  font-size:1.8rem;color:rgba(201,150,58,.4);
+  display:block;margin-bottom:.5rem;
+}
+
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(22px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* Intersection Observer animations */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .65s ease,transform .65s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* Mobile */
+@media(max-width:600px){
+  nav{padding:.8rem 1.2rem}
+  .nav-signin{display:none}
+  .steps-wrap::before{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">My Diary</div>
+  <div class="nav-links">
+    <a class="nav-link nav-signin" href="login.html">Sign In</a>
+    <a class="nav-link nav-cta" href="login.html">Get Started</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge"><span></span> Your Private Digital Diary</div>
+  <h1 class="hero-title">My Diary</h1>
+  <p class="hero-sub">A beautiful, private space to write your thoughts, collect memories, and revisit your story — anytime, anywhere.</p>
+  <div class="hero-btns">
+    <a class="btn-primary" href="login.html">Start Writing Free</a>
+    <a class="btn-ghost" href="#features">See Features</a>
+  </div>
+  <div class="scroll-hint">
+    <div class="scroll-arrow"></div>
+    scroll
+  </div>
+</section>
+
+<!-- FEATURES -->
+<div class="section" id="features">
+  <p class="sec-label reveal">Everything you need</p>
+  <h2 class="sec-title reveal">Your diary, the way you imagined it</h2>
+  <p class="sec-desc reveal">Simple to use, beautiful to look at — with everything you need to keep your thoughts safe and organised.</p>
+  <div class="divider reveal"></div>
+
+  <div class="features-grid">
+    <div class="feat-card reveal">
+      <span class="feat-icon">📚</span>
+      <div class="feat-title">Multiple Books</div>
+      <div class="feat-desc">Organise your entries into separate books — travel diaries, personal journals, dream logs — each with its own colour and style.</div>
+    </div>
+    <div class="feat-card reveal">
+      <span class="feat-icon">🔒</span>
+      <div class="feat-title">PIN Protection</div>
+      <div class="feat-desc">Lock your app and individual books with a 4-digit PIN. Your private thoughts stay private, always.</div>
+    </div>
+    <div class="feat-card reveal">
+      <span class="feat-icon">🖼️</span>
+      <div class="feat-title">Photos & Drawings</div>
+      <div class="feat-desc">Add photos to your pages and sketch freely with the built-in drawing canvas. Make each entry truly yours.</div>
+    </div>
+    <div class="feat-card reveal">
+      <span class="feat-icon">📅</span>
+      <div class="feat-title">Calendar View</div>
+      <div class="feat-desc">See your writing journey on a calendar. Every day you write is marked — watch your streak grow.</div>
+    </div>
+    <div class="feat-card reveal">
+      <span class="feat-icon">✍️</span>
+      <div class="feat-title">Rich Writing</div>
+      <div class="feat-desc">Write freely with a clean, distraction-free editor. Your words are saved automatically as you type.</div>
+    </div>
+    <div class="feat-card reveal">
+      <span class="feat-icon">📊</span>
+      <div class="feat-title">Personal Stats</div>
+      <div class="feat-desc">Track your writing streak, total pages, word count, and photo collection all from your profile dashboard.</div>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="section">
+  <p class="sec-label reveal">Simple as writing on paper</p>
+  <h2 class="sec-title reveal">How it works</h2>
+  <div class="divider reveal"></div>
+
+  <div class="steps-wrap">
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step-num">1</div>
+        <div class="step-title">Create your account</div>
+        <div class="step-desc">Sign up in seconds — just your name, email, and a password. No credit card needed.</div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">2</div>
+        <div class="step-title">Create a book</div>
+        <div class="step-desc">Give your diary a name and a colour. Add a PIN to lock it if you want extra privacy.</div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">3</div>
+        <div class="step-title">Start writing</div>
+        <div class="step-desc">Add pages, write your thoughts, attach photos, and draw. Your diary grows with you.</div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">4</div>
+        <div class="step-title">Look back anytime</div>
+        <div class="step-desc">Browse your entries by book or calendar. Relive your memories whenever you like.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="cta-band reveal">
+  <h2>Start your diary today</h2>
+  <p>Free to use. Private by design. Yours forever.</p>
+  <div class="hero-btns">
+    <a class="btn-primary" href="login.html">Create Free Account</a>
+    <a class="btn-ghost" href="login.html">Sign In</a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <span class="f-logo">My Diary</span>
+  Your private space to write &nbsp;·&nbsp; &copy; 2026
+</footer>
+
+<script>
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      // Stagger children of same parent
+      const siblings = [...e.target.parentElement.querySelectorAll('.reveal')];
+      const idx = siblings.indexOf(e.target);
+      setTimeout(() => e.target.classList.add('visible'), idx * 80);
+      observer.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.12 });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
