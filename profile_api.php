@@ -6,13 +6,36 @@
 // =====================================================
 
 // ── EDIT THESE (same as api.php) ──────────────────
-$DB_HOST = 'localhost';
-$DB_PORT = '5432';
-$DB_NAME = 'mydiary';
-$DB_USER = 'postgres';
-$DB_PASS = 'admin';
+// ── GET DATABASE CONNECTION FROM RENDER ──────────
+$database_url = getenv('DATABASE_URL');
+if (!$database_url) {
+    out(500, 'DATABASE_URL environment variable not set. Please add it in Render dashboard.');
+}
+
+// Parse Render's DATABASE_URL format
+$db = parse_url($database_url);
+$DB_HOST = $db['host'];
+$DB_PORT = $db['port'] ?? '5432';
+$DB_NAME = ltrim($db['path'], '/');
+$DB_USER = $db['user'];
+$DB_PASS = $db['pass'] ?? '';
+// ────────────────────────────────────────────────
 // ──────────────────────────────────────────────────
 
+// Store sessions in PostgreSQL instead of files
+session_set_save_handler(
+    function($savePath, $sessionName) { return true; },
+    function() { return true; },
+    function($sessionId) { return ''; },
+    function($sessionId, $sessionData) { 
+        global $conn;
+        $sessionData = base64_encode($sessionData);
+        pg_query_params($conn, 'INSERT INTO sessions (id, data) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET data=$2', [$sessionId, $sessionData]);
+        return true;
+    },
+    function($sessionId) { return true; },
+    function() { return true; }
+);
 session_start();
 
 header('Content-Type: application/json');
